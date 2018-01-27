@@ -92,7 +92,6 @@ def planNext(lastWeekPlan):
         pickedMemberInThisWeek.append(m.name)
     return thisWeekPlan
 
-
 #EXECUTE PLANNING 
 for x in range(10):
     p = planNext(plans[-1])
