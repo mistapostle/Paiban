@@ -10,26 +10,51 @@ JOB_ITEMS_CANNOT_REPEAT = ['nightCall','aShift']
 #INIT MEMBERS 
 
 class Person:
-    def __init__(self, name, isOld ):
+    def __init__(self, name, isOld , state = None, total = 0):
         self.name = name 
         self.isOld = isOld
-        self.state={}
+        self.state= state or []
+        self.total = total 
 
-teamMembers =  [   Person('j',True),
-  Person('a',True),
-  Person('b',False),
-  Person('c',False), 
-  Person('e',False),
-  Person('d',False)
-  ]
 
+# teamMembers =  [   Person('j',True),
+#   Person('a',True),
+#   Person('b',False),
+#   Person('c',False), 
+#   Person('e',False),
+#   Person('d',False)
+#   ]
+# 
+# def _mm(m,x):
+#     m[x.name] = x 
+#     x.state = dict.fromkeys(JOB_ITEMS,0)
+#     return m   
+# teamMembersMap = reduce(_mm,teamMembers,{})
+# 
+
+
+
+def readMembers(fn):
+    teamMembers = [] 
+    with open(fn) as f : 
+        for l in f.readlines():
+            fields = l.split(',')
+            if len(fields ) != len(JOB_ITEMS) + 2 :
+                raise Exception("invalid memeber line : %s " % str(l) )
+            state =  [0] * len(JOB_ITEMS)
+            total = 0 
+            i = 0 
+            for s in fields[2:]:
+                state[i] = s 
+                total += s 
+                i +=1 
+            teamMembers.append( Person(fields[0], bool(fields[1]) , state , total  ))   
+    return teamMembers 
+
+teamMembers = readMembers('memebers.txt')
 youngTeamMembers  = [  m for m in teamMembers if not m.isOld ] 
-def _mm(m,x):
-    m[x.name] = x 
-    x.state = dict.fromkeys(JOB_ITEMS,0)
-    return m   
-teamMembersMap = reduce(_mm,teamMembers,{})
-print('teamMembersMap:  {0!s} '.format (teamMembersMap) ) 
+print('teamMembersMap:  {0!s} '.format (teamMembersMap) )
+
 
 
 
@@ -43,6 +68,7 @@ def readPlans(fn):
                 raise Exception("invalid plan line : %s " % str(j) )   
             plans.append( {  JOB_ITEMS[i]: j[i].strip()  for i in range(len(JOB_ITEMS) )  } )
     return plans 
+
 def writePlans(fn,plans):
     with open(fn,'w') as f :
         for p in plans:
@@ -57,21 +83,15 @@ def updateStateByPlan(oneWeekPlan):
     for k,v in oneWeekPlan.items() : 
         p = teamMembersMap[v]
         p.state[k] += 1 
+        p.total += 1 
 for p in plans:
     updateStateByPlan(p)
 
 
 
 #   PLANNING FUNCS 
-def findLowestRateMember(mbs, j):
-    l = 9999
-    i = 0  
-    for m in mbs : 
-        r = m.state[j] 
-        if r < l :
-            l =r 
-            li = m
-        i += 1 
+def findLowestRateMember(mbs, jobIndex):
+    li = min(mbs , key = lambda m : (m.total, m.state[jobIndex] ))
     return li
 
 
