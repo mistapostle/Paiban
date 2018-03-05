@@ -41,14 +41,10 @@ def readMembers(fn):
             fields = l.split(',')
             if len(fields ) != len(JOB_ITEMS) + 2 :
                 raise Exception("invalid memeber line : %s " % str(l) )
-            state =  [0] * len(JOB_ITEMS)
-            total = 0 
-            i = 0 
-            for s in fields[2:]:
-                state[i] = s 
-                total += s 
-                i +=1 
-            teamMembers.append( Person(fields[0], bool(fields[1]) , state , total  ))   
+            # state = [0] * 3
+            state = list(map(int , fields[2:]))
+            total = sum(state)
+            teamMembers.append( Person(fields[0], bool(fields[1]) , state , total  ) )   
     return teamMembers 
 
 teamMembers = readMembers('memebers.txt')
